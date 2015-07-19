@@ -14,5 +14,5 @@ or a critical error if it is greater than 10.
 
 Dual licence: FreeBSD License/GPL
 
-Copyright (c) 2014 Persistent Objects Ltd - http://p-o.co.uk
+Copyright (c) 2014, 2015 Persistent Objects Ltd - http://p-o.co.uk
 All rights reserved.
