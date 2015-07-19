@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 check SIEVE connections as per rfc 5804
 
@@ -41,47 +41,51 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Persistent Objects Ltd.
 """
 
+from __future__ import print_function
+
 __author__ = "Alan Hicks <ahicks@p-o.co.uk>"
 __version__ = "1.00"
 
 import datetime, re, socket, sys
 from optparse import OptionParser
 
+
 def pass_args(args):
     """Parse command line args"""
-
     usage = "usage: %prog [options] device"
     version = "%%prog %s" % (__version__)
 
     parser = OptionParser(usage=usage, version=version)
 
     parser.add_option("-v", "--verbose",
-                        action="store_true", dest="verbose", default=False,
-                        help="Verbose output", metavar="VERBOSITY")
+                      action="store_true", dest="verbose", default=False,
+                      help="Verbose output", metavar="VERBOSITY")
     parser.add_option("-H", "--host", default="localhost",
-                        help="Host where the running daemon can be found, defaults to localhost.")
+                      help="Host where the running daemon can be found, defaults to localhost.")
     parser.add_option("-P", "--port", type="int", default=4190,
-                        help="Port number for the running daemon, default 4190.")
+                      help="Port number for the running daemon, default 4190.")
     parser.add_option("-4", "--ipv4",
-                        action="store_true", dest="ipv4", default=False,
-                        help="Use ip version 4")
+                      action="store_true", dest="ipv4", default=False,
+                      help="Use ip version 4")
     parser.add_option("-6", "--ipv6",
-                        action="store_true", dest="ipv6", default=False,
-                        help="Use ip version 6")
+                      action="store_true", dest="ipv6", default=False,
+                      help="Use ip version 6")
     parser.add_option("-t", "--timeout", type="int",
-                        default=10,
-                        help="Timout", metavar="TIMEOUT")
+                      default=10,
+                      help="Timout", metavar="TIMEOUT")
     parser.add_option("-c", "--critical", type="int",
-                        default=10,
-                        help="Number of seconds for a Critical error")
+                      default=10,
+                      help="Number of seconds for a Critical error")
     parser.add_option("-w", "--warning", type="int",
-                        default=5,
-                        help="Number of seconds for a Warning")
+                      default=5,
+                      help="Number of seconds for a Warning")
     parser.add_option("-r", "--result",
-                        help="Supplied result for testing.")
+                      help="Supplied result for testing.")
     return parser.parse_args(args)
 
+
 class SIEVE:
+
     """SIEVE class to manage a sieve connection"""
 
     def get_sieve_info(self):
@@ -111,24 +115,24 @@ class SIEVE:
             self.sock = None
             ret_error = str(e)
 
-        count=0
+        count = 0
         if self.sock:
             while count < 10:
                 # SIEVE capability should be within the first ten lines
                 count += 1
                 line = ''
                 try:
-                    line = self.file.readline()
+                    line = self.file.readline().decode("utf-8")
                 except socket.error as e:
                     self.sock.close()
                 if line == '':
                     self.sock.close()
                 if 'IMPLEMENTATION' in line.upper():
-                    implementation = ''.join(re.findall('([a-zA-Z0-9., ])',line))
-                    (keyword, implementation) = implementation.split(' ',1)
+                    implementation = ''.join(re.findall('([a-zA-Z0-9., ])', line))
+                    (keyword, implementation) = implementation.split(' ', 1)
                 if 'SIEVE' in line.upper():
-                    capability = ''.join(re.findall('([a-zA-Z0-9., ])',line))
-                    (keyword, capability) = capability.split(' ',1)
+                    capability = ''.join(re.findall('([a-zA-Z0-9., ])', line))
+                    (keyword, capability) = capability.split(' ', 1)
                 if line.startswith('OK'):
                     break
 
@@ -138,16 +142,16 @@ class SIEVE:
                 self.sock.close()
             except socket.error as e:
                 ret_error = "Error shutting down socket: " + str(e)
-                pass
         time_end = datetime.datetime.now()
         time_diff = time_end - time_start
 
         return {
-            'capability':capability,
-            'implementation':implementation,
-            'timing':time_diff,
-            'error':ret_error
+            'capability': capability,
+            'implementation': implementation,
+            'timing': time_diff,
+            'error': ret_error
         }
+
 
 (options, args) = pass_args(sys.argv)
 
@@ -158,19 +162,19 @@ if options.warning > options.critical:
     ret_value = 3
     ret_message = "UNKNOWN: Warning is greater than Critical"
     sieve_result = {
-        'capability':'',
-        'implementation':'',
+        'capability': '',
+        'implementation': '',
         'timing': time_end - time_end,
-        'error':''
+        'error': ''
     }
 elif options.result:
     # User provided result
     time_end = datetime.datetime.now()
     sieve_result = {
-        'capability':options.result,
-        'implementation':'Test result',
+        'capability': options.result,
+        'implementation': 'Test result',
         'timing': time_end - time_end,
-        'error':''
+        'error': ''
     }
 else:
     sieve = SIEVE()
@@ -210,7 +214,7 @@ if options.verbose:
         ret_message2 = ''
     if sieve_result['error']:
         ret_message2 = ret_message2 + " " + sieve_result['error'] + ';'
-    print ret_message + ret_message1 + ret_message2
+    print(ret_message + ret_message1 + ret_message2)
 else:
-    print ret_message
+    print(ret_message)
 sys.exit(ret_value)
