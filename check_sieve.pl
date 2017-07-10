@@ -170,13 +170,13 @@ if ( (defined $p->opts->result) && ($p->opts->result < 0 || $p->opts->result > 2
     $p->nagios_die( ' invalid number supplied for the -r option ' );
 }
 unless ( defined $p->opts->warning || defined $p->opts->critical ) {
-	$p->nagios_die('Please supply a warning or critical threshold argument', UNKNOWN);
+	$p->nagios_exit('UNKNOWN', 'Please supply a warning or critical threshold argument');
 }
 if ( $p->opts->warning == $p->opts->critical ) {
-	$p->nagios_die('Critical is equal to Warning', UNKNOWN);
+	$p->nagios_exit('UNKNOWN', 'Critical is equal to Warning');
 }
 if ( $p->opts->warning > $p->opts->critical ) {
-	$p->nagios_die('Critical is longer than Warning', UNKNOWN);
+	$p->nagios_exit('UNKNOWN', 'Critical is longer than Warning');
 }
 
 
@@ -206,7 +206,7 @@ $sock = IO::Socket::INET6->new(
 	Domain   => $family,
 	Proto    => 'tcp',
 	Timeout  => $p->opts->timeout
-) or $p->nagios_exit(UNKNOWN, 'Unable to connect to: '. $p->opts->host .':'.$p->opts->port);
+) or $p->nagios_exit('UNKNOWN', 'Unable to connect to: '. $p->opts->host .':'.$p->opts->port);
 $peer_address = $sock->peerhost() . ':' . $sock->peerport();
 
 SOCKETLOOP:
