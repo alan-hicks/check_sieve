@@ -35,7 +35,6 @@ use strict;
 use warnings;
 use IO::Socket::INET6;
 use Time::HiRes;
-use Nagios::Plugin;
 
 use vars qw($VERSION $PROGNAME);
 use vars qw($start $duration $sock $family $code $line $implementation);
@@ -47,8 +46,30 @@ use File::Basename;
 $PROGNAME = basename($0);
 
 
+sub load_module {
+    my @names = @_;
+    my $module;
+    for my $name (@names) {
+        my $file = $name;
+        # requires need either a bare word or a file name
+        $file =~ s{::}{/}gsxm;
+        $file .= '.pm';
+        eval {
+            require $file;
+            $name->import();
+            $module = $name;
+		};
+		last if $module;
+    }
+    return $module;
+}
+
+my $plugin_module;
+
+$plugin_module = load_module( 'Monitoring::Plugin', 'Nagios::Plugin' ); #libmonitoring-plugin-perl or libnagios-plugin-perl
+
 # Instantiate Nagios::Plugin object (the 'usage' parameter is mandatory)
-my $p = Nagios::Plugin->new(
+my $p = $plugin_module->new(
     usage => "Usage: %s
     [ -v|--verbose ]
     [ -H|--host <host>]
